@@ -1,0 +1,51 @@
+name: Update Package Index
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'index/**'
+  workflow_dispatch:
+
+jobs:
+  update-index:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Generate packages.json
+        run: |
+          echo '{"packages": [' > packages.json.tmp
+          first=true
+          
+          # Find all package index files
+          find index -type f -name '*' | while read file; do
+            if [ "$first" = true ]; then
+              first=false
+            else
+              echo ',' >> packages.json.tmp
+            fi
+            
+            # Extract name, description, latest version
+            name=$(jq -r '.name' "$file")
+            desc=$(jq -r '.description // ""' "$file")
+            repo=$(jq -r '.repository // ""' "$file")
+            latest=$(jq -r '.versions[-1].version // "0.0.0"' "$file")
+            
+            echo "{\"name\":\"$name\",\"description\":\"$desc\",\"repository\":\"$repo\",\"latest\":\"$latest\"}" >> packages.json.tmp
+          done
+          
+          echo '], "updated": "'$(date -u +%Y-%m-%dT%H:%M:%SZ)'", "version": 1}' >> packages.json.tmp
+          
+          # Format JSON
+          jq '.' packages.json.tmp > packages.json
+          rm packages.json.tmp
+      
+      - name: Commit updated index
+        run: |
+          git config user.name "Oja Bot"
+          git config user.email "oja-bot@ifa-lang.org"
+          git add packages.json
+          git diff --staged --quiet || git commit -m "chore: update package index"
+          git push

@@ -1,0 +1,15 @@
+{
+  "name": "ifa-std-extra",
+  "description": "Extended standard library utilities for Ifá-Lang",
+  "repository": "https://github.com/AAEO04/ifa-std-extra",
+  "license": "MIT",
+  "keywords": ["stdlib", "utilities", "helpers"],
+  "versions": [
+    {
+      "version": "0.1.0",
+      "checksum": "sha256:placeholder",
+      "yanked": false,
+      "dependencies": {}
+    }
+  ]
+}
